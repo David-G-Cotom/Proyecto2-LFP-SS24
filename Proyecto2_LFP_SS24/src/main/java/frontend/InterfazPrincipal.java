@@ -4,7 +4,10 @@
  */
 package frontend;
 
+import java.io.IOException;
+import java.io.StringReader;
 import javax.swing.table.DefaultTableModel;
+import jflex.AnalizadorLexico;
 
 /**
  *
@@ -16,7 +19,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
     private final DefaultTableModel modelTableErroresSintacticos;
     private final DefaultTableModel modelTableTablasEncontradas;
     private final DefaultTableModel modelTableTablasModificadas;
-    
+
     /**
      * Creates new form InterfazPrincipal
      */
@@ -52,8 +55,8 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         jScrollPane5 = new javax.swing.JScrollPane();
         tblTablasModificadas = new javax.swing.JTable();
         btnAnalizar = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        txaCodigo = new javax.swing.JTextPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         mnuCarga = new javax.swing.JMenuItem();
@@ -223,10 +226,13 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         setMinimumSize(new java.awt.Dimension(1000, 600));
 
         btnAnalizar.setText("Analizar");
+        btnAnalizar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAnalizarActionPerformed(evt);
+            }
+        });
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane1.setViewportView(jTextArea1);
+        jScrollPane6.setViewportView(txaCodigo);
 
         jMenu1.setText("Archivo");
 
@@ -269,17 +275,18 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 988, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane6)
+                        .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnAnalizar)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .addGap(0, 922, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
                 .addComponent(btnAnalizar)
                 .addContainerGap())
@@ -288,9 +295,23 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
+        try {
+            AnalizadorLexico analizador = new AnalizadorLexico(new StringReader(this.txaCodigo.getText()));
+            analizador.pintor.establecerEstilo(this.txaCodigo.getText());
+            this.txaCodigo.setDocument(analizador.pintor.textPane.getDocument());
+            while (!analizador.yyatEOF()) {
+                System.out.println(analizador.yylex().toString());
+            }
+            System.out.println("");
+        } catch (IOException ex) {
+            System.out.println("Error " + ex);
+        }
+    }//GEN-LAST:event_btnAnalizarActionPerformed
+
     /**
-     * Metodo que le da a las Tablas de Reportes en la interfaz el modelo adecuado
-     * para su visualizacion
+     * Metodo que le da a las Tablas de Reportes en la interfaz el modelo
+     * adecuado para su visualizacion
      */
     private void iniciarTableros() {
         this.tblErroresLexicos.setModel(modelTableErroresLexicos);
@@ -305,18 +326,18 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         this.modelTableErroresSintacticos.addColumn("Linea");
         this.modelTableErroresSintacticos.addColumn("Columna");
         this.modelTableErroresSintacticos.addColumn("Descripcion");
-        
+
         this.tblTablasEncontradas.setModel(modelTableTablasEncontradas);
         this.modelTableTablasEncontradas.addColumn("Token");
         this.modelTableTablasEncontradas.addColumn("Linea");
         this.modelTableTablasEncontradas.addColumn("Columna");
-        
+
         this.tblTablasModificadas.setModel(modelTableTablasModificadas);
         this.modelTableTablasModificadas.addColumn("Token");
         this.modelTableTablasModificadas.addColumn("Linea");
         this.modelTableTablasModificadas.addColumn("Columna");
     }
-    
+
     /**
      * Metodo que limpia la Tabla de Reporte en la Interfaz para no tener
      * problemas de colapsos
@@ -330,7 +351,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             }
         }
     }
-    
+
     /**
      * Metodo que limpia la Tabla de Reporte en la Interfaz para no tener
      * problemas de colapsos
@@ -344,7 +365,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             }
         }
     }
-    
+
     /**
      * Metodo que limpia la Tabla de Reporte en la Interfaz para no tener
      * problemas de colapsos
@@ -358,7 +379,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             }
         }
     }
-    
+
     /**
      * Metodo que limpia la Tabla de Reporte en la Interfaz para no tener
      * problemas de colapsos
@@ -372,7 +393,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             }
         }
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAnalizar;
     private javax.swing.JDialog dlgReporteErrorLexico;
@@ -383,12 +404,11 @@ public class InterfazPrincipal extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JMenuItem mnuCarga;
     private javax.swing.JMenuItem mnuErrorLexico;
     private javax.swing.JMenuItem mnuErrorSintactico;
@@ -401,5 +421,6 @@ public class InterfazPrincipal extends javax.swing.JFrame {
     private javax.swing.JTable tblErroresSintacticos;
     private javax.swing.JTable tblTablasEncontradas;
     private javax.swing.JTable tblTablasModificadas;
+    private javax.swing.JTextPane txaCodigo;
     // End of variables declaration//GEN-END:variables
 }
