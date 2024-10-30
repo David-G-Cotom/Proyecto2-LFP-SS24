@@ -77,6 +77,7 @@ ESPACIO = [" "\r\t\n\f]
 <YYINITIAL> "DESC" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "LIMIT" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "JOIN" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
+<YYINITIAL> "NUMERIC" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 
 <YYINITIAL> "INTEGER" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
 <YYINITIAL> "BIGINT" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
@@ -105,7 +106,7 @@ ESPACIO = [" "\r\t\n\f]
 
 <YYINITIAL> "'"{NUMERO}{NUMERO}{NUMERO}{NUMERO}"-"{NUMERO}{NUMERO}"-"{NUMERO}{NUMERO}"'" {pintor.pintarAmarillo((int)yychar, yylength()); return new Token(TokenConstant.FECHA, yyline, yycolumn, yytext());}
 
-<YYINITIAL> "'".*"'" {pintor.pintarVerde((int)yychar, yylength()); return new Token(TokenConstant.CADENA, yyline, yycolumn, yytext());}
+<YYINITIAL> "'"([\\]|[^\n\'])*"'" {pintor.pintarVerde((int)yychar, yylength()); return new Token(TokenConstant.CADENA, yyline, yycolumn, yytext());}
 
 <YYINITIAL> {LETRA_MINUSCULA}+({LETRA_MINUSCULA}|[_]|{NUMERO})* {pintor.pintarFucsia((int)yychar, yylength()); return new Token(TokenConstant.ID, yyline, yycolumn, yytext());}
 
@@ -129,3 +130,5 @@ ESPACIO = [" "\r\t\n\f]
 <YYINITIAL> "-"" ""-".* {pintor.pintarGris((int)yychar, yylength()); return new Token(TokenConstant.COMENTARIO, yyline, yycolumn, yytext());}
 
 <YYINITIAL> {ESPACIO} {}
+
+<YYINITIAL> . {return new Token(TokenConstant.ERROR, yyline, yycolumn, yytext());}

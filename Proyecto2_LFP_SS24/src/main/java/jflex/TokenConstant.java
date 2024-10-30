@@ -24,6 +24,7 @@ public enum TokenConstant {
     RELACIONAL,
     LOGICO,
     COMENTARIO,
+    ERROR,
     EOF;
     
 }

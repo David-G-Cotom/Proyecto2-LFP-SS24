@@ -4,16 +4,34 @@
  */
 package frontend;
 
+import java.awt.Color;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
 import jflex.AnalizadorLexico;
+import jflex.Token;
+import jflex.TokenConstant;
 
 /**
  *
  * @author Carlos Cotom
  */
 public class InterfazPrincipal extends javax.swing.JFrame {
+
+    private ArrayList<Token> tokensErrorLexico;
+
+    private File archivoActual;
 
     private final DefaultTableModel modelTableErroresLexicos;
     private final DefaultTableModel modelTableErroresSintacticos;
@@ -57,6 +75,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         btnAnalizar = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
         txaCodigo = new javax.swing.JTextPane();
+        btnLimpiar = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         mnuCarga = new javax.swing.JMenuItem();
@@ -68,6 +87,8 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         mnuErrorSintactico = new javax.swing.JMenuItem();
         mnuTablasEncontradas = new javax.swing.JMenuItem();
         mnuTablasModificadas = new javax.swing.JMenuItem();
+
+        dlgReporteErrorLexico.setMinimumSize(new java.awt.Dimension(600, 300));
 
         tblErroresLexicos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -234,15 +255,37 @@ public class InterfazPrincipal extends javax.swing.JFrame {
 
         jScrollPane6.setViewportView(txaCodigo);
 
+        btnLimpiar.setText("Limpiar");
+        btnLimpiar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLimpiarActionPerformed(evt);
+            }
+        });
+
         jMenu1.setText("Archivo");
 
         mnuCarga.setText("Cargar");
+        mnuCarga.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuCargaActionPerformed(evt);
+            }
+        });
         jMenu1.add(mnuCarga);
 
         mnuGuardar.setText("Guardar");
+        mnuGuardar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuGuardarActionPerformed(evt);
+            }
+        });
         jMenu1.add(mnuGuardar);
 
-        mnuGuardarComo.setText("Guardar como");
+        mnuGuardarComo.setText("Guardar como...");
+        mnuGuardarComo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuGuardarComoActionPerformed(evt);
+            }
+        });
         jMenu1.add(mnuGuardarComo);
 
         jMenuBar1.add(jMenu1);
@@ -253,6 +296,11 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         jMenu3.setText("Reporte");
 
         mnuErrorLexico.setText("Error Lexico");
+        mnuErrorLexico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuErrorLexicoActionPerformed(evt);
+            }
+        });
         jMenu3.add(mnuErrorLexico);
 
         mnuErrorSintactico.setText("Error Sintacticos");
@@ -280,7 +328,9 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnAnalizar)
-                        .addGap(0, 922, Short.MAX_VALUE))))
+                        .addGap(18, 18, 18)
+                        .addComponent(btnLimpiar)
+                        .addGap(0, 832, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -288,7 +338,9 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 .addContainerGap()
                 .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 524, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
-                .addComponent(btnAnalizar)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnAnalizar)
+                    .addComponent(btnLimpiar))
                 .addContainerGap())
         );
 
@@ -296,18 +348,82 @@ public class InterfazPrincipal extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
+        this.tokensErrorLexico = new ArrayList<>();
         try {
             AnalizadorLexico analizador = new AnalizadorLexico(new StringReader(this.txaCodigo.getText()));
             analizador.pintor.establecerEstilo(this.txaCodigo.getText());
             this.txaCodigo.setDocument(analizador.pintor.textPane.getDocument());
             while (!analizador.yyatEOF()) {
-                System.out.println(analizador.yylex().toString());
+                Token tokenActual = analizador.yylex();
+                System.out.println(tokenActual.toString());
+                if (tokenActual.getTipoToken() == TokenConstant.ERROR) {
+                    this.tokensErrorLexico.add(tokenActual);
+                }
             }
             System.out.println("");
         } catch (IOException ex) {
             System.out.println("Error " + ex);
         }
     }//GEN-LAST:event_btnAnalizarActionPerformed
+
+    private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
+        this.txaCodigo.setText("");
+        Style defaultStyle = this.txaCodigo.addStyle("DefaultStyle", null);
+        StyleConstants.setForeground(defaultStyle, Color.black);
+        this.txaCodigo.setCharacterAttributes(defaultStyle, true);
+    }//GEN-LAST:event_btnLimpiarActionPerformed
+
+    private void mnuErrorLexicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuErrorLexicoActionPerformed
+        this.vaciarTablaErroresLexicos();
+        this.llenarTablaErroresLexicos();
+        this.dlgReporteErrorLexico.setVisible(true);
+        this.dlgReporteErrorLexico.setLocationRelativeTo(this);
+    }//GEN-LAST:event_mnuErrorLexicoActionPerformed
+
+    private void mnuCargaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuCargaActionPerformed
+        FileNameExtensionFilter filtro = new FileNameExtensionFilter("*.txt", "txt");
+        jFileChooser1.setFileFilter(filtro);
+        jFileChooser1.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        jFileChooser1.setVisible(true);
+        int resultado = jFileChooser1.showOpenDialog(this);
+        if (resultado == JFileChooser.APPROVE_OPTION) {
+            this.archivoActual = jFileChooser1.getSelectedFile();
+            try (BufferedReader reader = new BufferedReader(new FileReader(this.archivoActual))) {
+                this.txaCodigo.read(reader, null);
+            } catch (IOException e) {
+                System.out.println("Error al imprimir el codigo fuente: " + e);
+            }
+        }
+    }//GEN-LAST:event_mnuCargaActionPerformed
+
+    private void mnuGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuGuardarActionPerformed
+        if (this.archivoActual == null) {
+            JFileChooser fileChooser = new JFileChooser();
+            if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+                this.archivoActual = fileChooser.getSelectedFile();
+                escribirArchivoNuevo(this.archivoActual);
+            }
+        } else {
+            this.escribirArchivoNuevo(archivoActual);
+        }
+    }//GEN-LAST:event_mnuGuardarActionPerformed
+
+    private void mnuGuardarComoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuGuardarComoActionPerformed
+        JFileChooser fileChooser = new JFileChooser();
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            this.archivoActual = fileChooser.getSelectedFile();
+            escribirArchivoNuevo(this.archivoActual);
+        }
+    }//GEN-LAST:event_mnuGuardarComoActionPerformed
+
+    private void escribirArchivoNuevo(File file) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            writer.write(this.txaCodigo.getText());
+            JOptionPane.showMessageDialog(this, "Archivo guardado con Exito");
+        } catch (IOException e) {
+            System.out.println("Error al guardar el archivo: " + e);
+        }
+    }
 
     /**
      * Metodo que le da a las Tablas de Reportes en la interfaz el modelo
@@ -349,6 +465,25 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             for (int i = 0; i < filasTabla; i++) {
                 this.modelTableErroresLexicos.removeRow(0);
             }
+        }
+    }
+
+    /**
+     * Metodo que muestra en la Tabla de Reporte en la interfaz los datos de
+     * cada Token que esta se encontro en el analisis
+     *
+     * @param datos son los datos de cada token registrados
+     */
+    private void llenarTablaErroresLexicos() {
+        this.tblErroresLexicos.setModel(this.modelTableErroresLexicos);
+        Object[] fila;
+        for (int i = 0; i < this.tokensErrorLexico.size(); i++) {
+            fila = new Object[4];
+            fila[0] = this.tokensErrorLexico.get(i).getLexema();
+            fila[1] = this.tokensErrorLexico.get(i).getLinea();
+            fila[2] = this.tokensErrorLexico.get(i).getColumna();
+            fila[3] = "Token no Reconocido";
+            this.modelTableErroresLexicos.addRow(fila);
         }
     }
 
@@ -396,6 +531,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAnalizar;
+    private javax.swing.JButton btnLimpiar;
     private javax.swing.JDialog dlgReporteErrorLexico;
     private javax.swing.JDialog dlgReporteErrorSintactico;
     private javax.swing.JDialog dlgReporteTablasEncontradas;
