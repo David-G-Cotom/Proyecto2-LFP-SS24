@@ -4,10 +4,20 @@
  */
 package parser;
 
-/**
- *
- * @author Carlos Cotom
- */
-public class AnalizadorSintactico {
-    
+public abstract class AnalizadorSintactico {
+    protected Data data;
+
+    public AnalizadorSintactico(Data data) {
+        this.data = data;
+    }
+
+    public abstract void analyze() ;
+
+    protected void errorStatus(String descripcion) {
+        data.addSyntaxError(descripcion);
+    }
+
+    public Data getData(){
+        return data;
+    }
 }

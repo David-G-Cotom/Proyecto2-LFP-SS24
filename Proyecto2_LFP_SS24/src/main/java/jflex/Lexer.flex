@@ -57,7 +57,7 @@ ESPACIO = [" "\r\t\n\f]
 <YYINITIAL> "DROP" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "CONSTRAINT" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "IF" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
-<YYINITIAL> "EXIST" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
+<YYINITIAL> "EXISTS" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "CASCADE" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "ON" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "DELETE" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
@@ -77,7 +77,6 @@ ESPACIO = [" "\r\t\n\f]
 <YYINITIAL> "DESC" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "LIMIT" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 <YYINITIAL> "JOIN" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
-<YYINITIAL> "NUMERIC" {pintor.pintarNaranja((int)yychar, yylength()); return new Token(TokenConstant.CREATE, yyline, yycolumn, yytext());}
 
 <YYINITIAL> "INTEGER" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
 <YYINITIAL> "BIGINT" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
@@ -87,6 +86,7 @@ ESPACIO = [" "\r\t\n\f]
 <YYINITIAL> "TEXT" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
 <YYINITIAL> "BOOLEAN" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
 <YYINITIAL> "SERIAL" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
+<YYINITIAL> "NUMERIC" {pintor.pintarMorado((int)yychar, yylength()); return new Token(TokenConstant.TIPO_DATO, yyline, yycolumn, yytext());}
 
 <YYINITIAL> "TRUE" {pintor.pintarAzul((int)yychar, yylength()); return new Token(TokenConstant.BOOLEAN, yyline, yycolumn, yytext());}
 <YYINITIAL> "FALSE" {pintor.pintarAzul((int)yychar, yylength()); return new Token(TokenConstant.BOOLEAN, yyline, yycolumn, yytext());}

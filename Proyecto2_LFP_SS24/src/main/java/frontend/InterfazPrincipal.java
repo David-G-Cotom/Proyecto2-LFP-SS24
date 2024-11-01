@@ -17,11 +17,19 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import jflex.AnalizadorLexico;
 import jflex.Token;
 import jflex.TokenConstant;
+import parser.Data;
+import parser.ModifiedTable;
+import parser.StateAnalyzer;
+import parser.SyntaxError;
+import parser.SyntaxException;
+import parser.Table;
 
 /**
  *
@@ -30,6 +38,7 @@ import jflex.TokenConstant;
 public class InterfazPrincipal extends javax.swing.JFrame {
 
     private ArrayList<Token> tokensErrorLexico;
+    private Data data;
 
     private File archivoActual;
 
@@ -37,6 +46,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
     private final DefaultTableModel modelTableErroresSintacticos;
     private final DefaultTableModel modelTableTablasEncontradas;
     private final DefaultTableModel modelTableTablasModificadas;
+    private final DefaultTableModel modelTablaNumeroOperaciones;
 
     /**
      * Creates new form InterfazPrincipal
@@ -46,6 +56,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         this.modelTableErroresSintacticos = new DefaultTableModel();
         this.modelTableTablasEncontradas = new DefaultTableModel();
         this.modelTableTablasModificadas = new DefaultTableModel();
+        this.modelTablaNumeroOperaciones = new DefaultTableModel();
         initComponents();
         this.iniciarTableros();
     }
@@ -72,10 +83,14 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         dlgReporteTablasModificadas = new javax.swing.JDialog();
         jScrollPane5 = new javax.swing.JScrollPane();
         tblTablasModificadas = new javax.swing.JTable();
+        dlgReporteNumeroOperaciones = new javax.swing.JDialog();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblNumeroOperaciones = new javax.swing.JTable();
         btnAnalizar = new javax.swing.JButton();
         jScrollPane6 = new javax.swing.JScrollPane();
         txaCodigo = new javax.swing.JTextPane();
         btnLimpiar = new javax.swing.JButton();
+        lblFilaColumna = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         mnuCarga = new javax.swing.JMenuItem();
@@ -87,7 +102,10 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         mnuErrorSintactico = new javax.swing.JMenuItem();
         mnuTablasEncontradas = new javax.swing.JMenuItem();
         mnuTablasModificadas = new javax.swing.JMenuItem();
+        mnuNumeroOperaciones = new javax.swing.JMenuItem();
 
+        dlgReporteErrorLexico.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        dlgReporteErrorLexico.setTitle("Reporte Errores Lexicos");
         dlgReporteErrorLexico.setMinimumSize(new java.awt.Dimension(600, 300));
 
         tblErroresLexicos.setModel(new javax.swing.table.DefaultTableModel(
@@ -128,6 +146,10 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        dlgReporteErrorSintactico.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        dlgReporteErrorSintactico.setTitle("Reporte de Errores Sintacticos");
+        dlgReporteErrorSintactico.setMinimumSize(new java.awt.Dimension(700, 300));
+
         tblErroresSintacticos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null, null},
@@ -166,6 +188,10 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        dlgReporteTablasEncontradas.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        dlgReporteTablasEncontradas.setTitle("Reporte de Tablas Encontradas");
+        dlgReporteTablasEncontradas.setMinimumSize(new java.awt.Dimension(500, 300));
+
         tblTablasEncontradas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null},
@@ -174,7 +200,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 {null, null, null}
             },
             new String [] {
-                "Token", "Linea", "Columna"
+                "Tabla", "Linea", "Columna"
             }
         ) {
             boolean[] canEdit = new boolean [] {
@@ -204,19 +230,23 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        dlgReporteTablasModificadas.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        dlgReporteTablasModificadas.setTitle("Reporte de Tablas Modificadas");
+        dlgReporteTablasModificadas.setMinimumSize(new java.awt.Dimension(500, 300));
+
         tblTablasModificadas.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null},
-                {null, null, null},
-                {null, null, null},
-                {null, null, null}
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
             },
             new String [] {
-                "Token", "Linea", "Columna"
+                "Modificacion", "Tabla", "Linea", "Columna"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -242,6 +272,40 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        dlgReporteNumeroOperaciones.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        dlgReporteNumeroOperaciones.setTitle("Reporte de Numero de Operaciones");
+        dlgReporteNumeroOperaciones.setMinimumSize(new java.awt.Dimension(400, 300));
+
+        tblNumeroOperaciones.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Operacion", "Cantidad"
+            }
+        ));
+        jScrollPane1.setViewportView(tblNumeroOperaciones);
+
+        javax.swing.GroupLayout dlgReporteNumeroOperacionesLayout = new javax.swing.GroupLayout(dlgReporteNumeroOperaciones.getContentPane());
+        dlgReporteNumeroOperaciones.getContentPane().setLayout(dlgReporteNumeroOperacionesLayout);
+        dlgReporteNumeroOperacionesLayout.setHorizontalGroup(
+            dlgReporteNumeroOperacionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dlgReporteNumeroOperacionesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        dlgReporteNumeroOperacionesLayout.setVerticalGroup(
+            dlgReporteNumeroOperacionesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(dlgReporteNumeroOperacionesLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("WorkBench");
         setMinimumSize(new java.awt.Dimension(1000, 600));
@@ -253,6 +317,11 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             }
         });
 
+        txaCodigo.addCaretListener(new javax.swing.event.CaretListener() {
+            public void caretUpdate(javax.swing.event.CaretEvent evt) {
+                txaCodigoCaretUpdate(evt);
+            }
+        });
         jScrollPane6.setViewportView(txaCodigo);
 
         btnLimpiar.setText("Limpiar");
@@ -261,6 +330,8 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 btnLimpiarActionPerformed(evt);
             }
         });
+
+        lblFilaColumna.setText(".");
 
         jMenu1.setText("Archivo");
 
@@ -304,13 +375,36 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         jMenu3.add(mnuErrorLexico);
 
         mnuErrorSintactico.setText("Error Sintacticos");
+        mnuErrorSintactico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuErrorSintacticoActionPerformed(evt);
+            }
+        });
         jMenu3.add(mnuErrorSintactico);
 
         mnuTablasEncontradas.setText("Tablas Encontradas");
+        mnuTablasEncontradas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuTablasEncontradasActionPerformed(evt);
+            }
+        });
         jMenu3.add(mnuTablasEncontradas);
 
         mnuTablasModificadas.setText("Tablas Modificadas");
+        mnuTablasModificadas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuTablasModificadasActionPerformed(evt);
+            }
+        });
         jMenu3.add(mnuTablasModificadas);
+
+        mnuNumeroOperaciones.setText("Numero Operaciones");
+        mnuNumeroOperaciones.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mnuNumeroOperacionesActionPerformed(evt);
+            }
+        });
+        jMenu3.add(mnuNumeroOperaciones);
 
         jMenuBar1.add(jMenu3);
 
@@ -323,14 +417,14 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane6)
-                        .addContainerGap())
+                    .addComponent(jScrollPane6)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(btnAnalizar)
                         .addGap(18, 18, 18)
                         .addComponent(btnLimpiar)
-                        .addGap(0, 832, Short.MAX_VALUE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 823, Short.MAX_VALUE)
+                        .addComponent(lblFilaColumna)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -340,7 +434,8 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAnalizar)
-                    .addComponent(btnLimpiar))
+                    .addComponent(btnLimpiar)
+                    .addComponent(lblFilaColumna))
                 .addContainerGap())
         );
 
@@ -349,6 +444,7 @@ public class InterfazPrincipal extends javax.swing.JFrame {
 
     private void btnAnalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAnalizarActionPerformed
         this.tokensErrorLexico = new ArrayList<>();
+        ArrayList<Token> tokensAnalizados = new ArrayList<>();
         try {
             AnalizadorLexico analizador = new AnalizadorLexico(new StringReader(this.txaCodigo.getText()));
             analizador.pintor.establecerEstilo(this.txaCodigo.getText());
@@ -358,15 +454,29 @@ public class InterfazPrincipal extends javax.swing.JFrame {
                 System.out.println(tokenActual.toString());
                 if (tokenActual.getTipoToken() == TokenConstant.ERROR) {
                     this.tokensErrorLexico.add(tokenActual);
+                    continue;
                 }
+                if (tokenActual.getTipoToken() == TokenConstant.COMENTARIO) {
+                    continue;
+                }
+                tokensAnalizados.add(tokenActual);
             }
             System.out.println("");
         } catch (IOException ex) {
             System.out.println("Error " + ex);
         }
+        try {
+            data = new Data(tokensAnalizados);
+            StateAnalyzer stateAnalyzer = new StateAnalyzer(data);
+            stateAnalyzer.analyze();
+        } catch (SyntaxException e) {
+            JOptionPane.showMessageDialog(this, "Analisis Finalizado", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+
     }//GEN-LAST:event_btnAnalizarActionPerformed
 
     private void btnLimpiarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLimpiarActionPerformed
+        this.data = null;
         this.txaCodigo.setText("");
         Style defaultStyle = this.txaCodigo.addStyle("DefaultStyle", null);
         StyleConstants.setForeground(defaultStyle, Color.black);
@@ -416,6 +526,59 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_mnuGuardarComoActionPerformed
 
+    private void txaCodigoCaretUpdate(javax.swing.event.CaretEvent evt) {//GEN-FIRST:event_txaCodigoCaretUpdate
+        try {
+            //Obtener la posicion del caracter actual en el JTextPane
+            int posicion = evt.getDot();
+            //Obtener el documento y el texto actual
+            Document doc = this.txaCodigo.getDocument();
+            String text = doc.getText(0, doc.getLength());
+            int line = 0;
+            int column = 0;
+            //Recorrer el texto hasta la posicion del caracter para contar las lineas y clumnas
+            for (int i = 0; i < posicion; i++) {
+                if (text.charAt(i) == '\n') {
+                    line++;
+                    column = 0;
+                } else {
+                    column++;
+                }
+            }
+            //Mostrar el numero de fila y columna actual del cursor
+            this.lblFilaColumna.setText("Fila: " + line + " Columna: " + column);
+        } catch (BadLocationException e) {
+            System.out.println("Error para la actuizacion de fila columna: " + e);
+        }
+    }//GEN-LAST:event_txaCodigoCaretUpdate
+
+    private void mnuErrorSintacticoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuErrorSintacticoActionPerformed
+        this.vaciarTablaErroresSintacticos();
+        this.llenarTablaErroresSintacticos();
+        this.dlgReporteErrorSintactico.setVisible(true);
+        this.dlgReporteErrorSintactico.setLocationRelativeTo(this);
+    }//GEN-LAST:event_mnuErrorSintacticoActionPerformed
+
+    private void mnuTablasEncontradasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuTablasEncontradasActionPerformed
+        this.vaciarTableTablasEncontradas();
+        this.llenarTableTablasEncontradas();
+        this.dlgReporteTablasEncontradas.setVisible(true);
+        this.dlgReporteTablasEncontradas.setLocationRelativeTo(this);
+    }//GEN-LAST:event_mnuTablasEncontradasActionPerformed
+
+    private void mnuTablasModificadasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuTablasModificadasActionPerformed
+        this.vaciarTableTablasModificadas();
+        this.llenarTableTablasModificadas();
+        this.dlgReporteTablasModificadas.setVisible(true);
+        this.dlgReporteTablasModificadas.setLocationRelativeTo(this);
+    }//GEN-LAST:event_mnuTablasModificadasActionPerformed
+
+    private void mnuNumeroOperacionesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mnuNumeroOperacionesActionPerformed
+        this.vaciarTablaNumeroOperaciones();
+        this.llenarTablaNumeroOperaciones();
+        this.dlgReporteNumeroOperaciones.setVisible(true);
+        this.dlgReporteNumeroOperaciones.setLocationRelativeTo(this);
+    }//GEN-LAST:event_mnuNumeroOperacionesActionPerformed
+
     private void escribirArchivoNuevo(File file) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
             writer.write(this.txaCodigo.getText());
@@ -438,20 +601,25 @@ public class InterfazPrincipal extends javax.swing.JFrame {
 
         this.tblErroresSintacticos.setModel(modelTableErroresSintacticos);
         this.modelTableErroresSintacticos.addColumn("Token");
-        this.modelTableErroresSintacticos.addColumn("Tipo TOken");
+        this.modelTableErroresSintacticos.addColumn("Tipo Token");
         this.modelTableErroresSintacticos.addColumn("Linea");
         this.modelTableErroresSintacticos.addColumn("Columna");
         this.modelTableErroresSintacticos.addColumn("Descripcion");
 
         this.tblTablasEncontradas.setModel(modelTableTablasEncontradas);
-        this.modelTableTablasEncontradas.addColumn("Token");
+        this.modelTableTablasEncontradas.addColumn("Tabla");
         this.modelTableTablasEncontradas.addColumn("Linea");
         this.modelTableTablasEncontradas.addColumn("Columna");
 
         this.tblTablasModificadas.setModel(modelTableTablasModificadas);
-        this.modelTableTablasModificadas.addColumn("Token");
+        this.modelTableTablasModificadas.addColumn("Modificacion");
+        this.modelTableTablasModificadas.addColumn("Tabla");
         this.modelTableTablasModificadas.addColumn("Linea");
         this.modelTableTablasModificadas.addColumn("Columna");
+
+        this.tblNumeroOperaciones.setModel(modelTablaNumeroOperaciones);
+        this.modelTablaNumeroOperaciones.addColumn("Operacion");
+        this.modelTablaNumeroOperaciones.addColumn("Cantidad");
     }
 
     /**
@@ -502,6 +670,27 @@ public class InterfazPrincipal extends javax.swing.JFrame {
     }
 
     /**
+     * Metodo que muestra en la Tabla de Reporte en la interfaz los datos de
+     * cada Token que esta se encontro en el analisis
+     *
+     * @param datos son los datos de cada token registrados
+     */
+    private void llenarTablaErroresSintacticos() {
+        this.tblErroresSintacticos.setModel(this.modelTableErroresSintacticos);
+        Object[] fila;
+        ArrayList<SyntaxError> errores = this.data.getSyntaxErrors();
+        for (int i = 0; i < errores.size(); i++) {
+            fila = new Object[5];
+            fila[0] = errores.get(i).getErrorToken().getLexema();
+            fila[1] = errores.get(i).getErrorToken().getTipoToken();
+            fila[2] = errores.get(i).getErrorToken().getLinea();
+            fila[3] = errores.get(i).getErrorToken().getColumna();
+            fila[4] = errores.get(i).getDescription();
+            this.modelTableErroresSintacticos.addRow(fila);
+        }
+    }
+
+    /**
      * Metodo que limpia la Tabla de Reporte en la Interfaz para no tener
      * problemas de colapsos
      */
@@ -512,6 +701,25 @@ public class InterfazPrincipal extends javax.swing.JFrame {
             for (int i = 0; i < filasTabla; i++) {
                 this.modelTableTablasEncontradas.removeRow(0);
             }
+        }
+    }
+
+    /**
+     * Metodo que muestra en la Tabla de Reporte en la interfaz los datos de
+     * cada Token que esta se encontro en el analisis
+     *
+     * @param datos son los datos de cada token registrados
+     */
+    private void llenarTableTablasEncontradas() {
+        this.tblTablasEncontradas.setModel(this.modelTableTablasEncontradas);
+        Object[] fila;
+        ArrayList<Table> tablas = this.data.getTables();
+        for (int i = 0; i < tablas.size(); i++) {
+            fila = new Object[3];
+            fila[0] = tablas.get(i).getName().getLexema();
+            fila[1] = tablas.get(i).getName().getLinea();
+            fila[2] = tablas.get(i).getName().getColumna();
+            this.modelTableTablasEncontradas.addRow(fila);
         }
     }
 
@@ -529,32 +737,103 @@ public class InterfazPrincipal extends javax.swing.JFrame {
         }
     }
 
+    /**
+     * Metodo que muestra en la Tabla de Reporte en la interfaz los datos de
+     * cada Token que esta se encontro en el analisis
+     *
+     * @param datos son los datos de cada token registrados
+     */
+    private void llenarTableTablasModificadas() {
+        this.tblTablasModificadas.setModel(this.modelTableTablasModificadas);
+        Object[] fila;
+        ArrayList<ModifiedTable> modificaciones = this.data.getModifiedTables();
+        for (int i = 0; i < modificaciones.size(); i++) {
+            fila = new Object[4];
+            fila[0] = modificaciones.get(i).getKey().getLexema();
+            fila[1] = modificaciones.get(i).getName().getLexema();
+            fila[2] = modificaciones.get(i).getKey().getLinea();
+            fila[3] = modificaciones.get(i).getKey().getColumna();
+            this.modelTableTablasModificadas.addRow(fila);
+        }
+    }
+
+    /**
+     * Metodo que limpia la Tabla de Reporte en la Interfaz para no tener
+     * problemas de colapsos
+     */
+    private void vaciarTablaNumeroOperaciones() {
+        this.tblNumeroOperaciones.removeAll();
+        int filasTabla = this.modelTablaNumeroOperaciones.getRowCount();
+        if (filasTabla != 0) {
+            for (int i = 0; i < filasTabla; i++) {
+                this.modelTablaNumeroOperaciones.removeRow(0);
+            }
+        }
+    }
+
+    /**
+     * Metodo que muestra en la Tabla de Reporte en la interfaz los datos de
+     * cada Token que esta se encontro en el analisis
+     *
+     * @param datos son los datos de cada token registrados
+     */
+    private void llenarTablaNumeroOperaciones() {
+        this.tblNumeroOperaciones.setModel(this.modelTablaNumeroOperaciones);
+        Object[] fila;
+        fila = new Object[2];
+        fila[0] = "CREATE";
+        fila[1] = this.data.getCreates();
+        this.modelTablaNumeroOperaciones.addRow(fila);
+        fila = new Object[2];
+        fila[0] = "DELETE";
+        fila[1] = this.data.getDeletes();
+        this.modelTablaNumeroOperaciones.addRow(fila);
+        fila = new Object[2];
+        fila[0] = "UPDATE";
+        fila[1] = this.data.getUpdates();
+        this.modelTablaNumeroOperaciones.addRow(fila);
+        fila = new Object[2];
+        fila[0] = "SELECT";
+        fila[1] = this.data.getSelects();
+        this.modelTablaNumeroOperaciones.addRow(fila);
+        fila = new Object[2];
+        fila[0] = "ALTER";
+        fila[1] = this.data.getAlters();
+        this.modelTablaNumeroOperaciones.addRow(fila);
+
+    }
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAnalizar;
     private javax.swing.JButton btnLimpiar;
     private javax.swing.JDialog dlgReporteErrorLexico;
     private javax.swing.JDialog dlgReporteErrorSintactico;
+    private javax.swing.JDialog dlgReporteNumeroOperaciones;
     private javax.swing.JDialog dlgReporteTablasEncontradas;
     private javax.swing.JDialog dlgReporteTablasModificadas;
     private javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JLabel lblFilaColumna;
     private javax.swing.JMenuItem mnuCarga;
     private javax.swing.JMenuItem mnuErrorLexico;
     private javax.swing.JMenuItem mnuErrorSintactico;
     private javax.swing.JMenu mnuGrafico;
     private javax.swing.JMenuItem mnuGuardar;
     private javax.swing.JMenuItem mnuGuardarComo;
+    private javax.swing.JMenuItem mnuNumeroOperaciones;
     private javax.swing.JMenuItem mnuTablasEncontradas;
     private javax.swing.JMenuItem mnuTablasModificadas;
     private javax.swing.JTable tblErroresLexicos;
     private javax.swing.JTable tblErroresSintacticos;
+    private javax.swing.JTable tblNumeroOperaciones;
     private javax.swing.JTable tblTablasEncontradas;
     private javax.swing.JTable tblTablasModificadas;
     private javax.swing.JTextPane txaCodigo;
